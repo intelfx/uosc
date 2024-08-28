@@ -375,6 +375,7 @@ state = {
 	path = nil, -- current file path or URL
 	history = {}, -- history of last played files stored as full paths
 	time = nil, -- current media playback time
+	percentage = nil,
 	speed = 1,
 	---@type number|nil
 	duration = nil, -- current media duration
@@ -646,6 +647,7 @@ mp.register_event('end-file', function(event)
 		handle_file_end()
 	end
 end)
+mp.observe_property('percent-pos', 'number', create_state_setter('percentage', nil))
 mp.observe_property('playback-time', 'number', create_state_setter('time', function()
 	-- Create a file-end event that triggers right before file ends
 	file_end_timer:kill()
