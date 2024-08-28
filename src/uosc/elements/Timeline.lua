@@ -454,6 +454,16 @@ function Timeline:render()
 			sec_max_x = sec_max_x - spacing - time_right_width
 		end
 
+		-- Playback percentage
+		if state.percentage then
+			local x, align = sec_max_x, 6
+			local human = string.format("%.2f%%", state.percentage)
+			local width = text_width(human, sec_opts)
+
+			draw_timeline_timestamp(x, fcy, align, human, sec_opts)
+			sec_max_x = sec_max_x - width - margin
+		end
+
 		-- Upcoming cache time
 		local cache_duration = state.cache_duration and state.cache_duration / state.speed or nil
 		if cache_duration and options.buffered_time_threshold > 0
