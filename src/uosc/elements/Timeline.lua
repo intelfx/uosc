@@ -425,33 +425,45 @@ function Timeline:render()
 
 	-- Time values
 	if text_opacity > 0 then
-		local time_opts = {size = self.font_size, opacity = text_opacity, border = options.text_border * state.scale}
+		local time_opts = {
+			size = self.font_size, opacity = text_opacity, border = options.text_border * state.scale
+		}
+
+		-- "Secondary" elements (cached duration, ...)
+		local sec_opts = {
+			size = self.font_size * 0.8, opacity = text_opacity * 0.6, border = options.text_border * state.scale,
+		}
+		local margin = 5 * state.scale
+		local sec_min_x, sec_max_x = bax + margin, bbx - margin
+
+		-- Elapsed time
+		local time_left = state.time_human
+		local time_left_width = 0
+		if time_left then
+			draw_timeline_timestamp(bax + spacing, fcy, 4, time_left, time_opts)
+			time_left_width = timestamp_width(time_left, time_opts)
+			sec_min_x = sec_min_x + spacing + time_left_width
+		end
+
+		-- End time
+		local time_right = state.destination_time_human
+		local time_right_width = 0
+		if time_right then
+			draw_timeline_timestamp(bbx - spacing, fcy, 6, time_right, time_opts)
+			time_right_width = timestamp_width(time_right, time_opts)
+			sec_max_x = sec_max_x - spacing - time_right_width
+		end
+
 		-- Upcoming cache time
 		local cache_duration = state.cache_duration and state.cache_duration / state.speed or nil
 		if cache_duration and options.buffered_time_threshold > 0
 			and cache_duration < options.buffered_time_threshold then
-			local margin = 5 * state.scale
 			local x, align = fbx + margin, 4
-			local cache_opts = {
-				size = self.font_size * 0.8, opacity = text_opacity * 0.6, border = options.text_border * state.scale,
-			}
 			local human = round(cache_duration) .. 's'
-			local width = text_width(human, cache_opts)
-			local time_width = timestamp_width(state.time_human, time_opts)
-			local time_width_end = timestamp_width(state.destination_time_human, time_opts)
-			local min_x, max_x = bax + spacing + margin + time_width, bbx - spacing - margin - time_width_end
-			if x < min_x then x = min_x elseif x + width > max_x then x, align = max_x, 6 end
-			draw_timeline_timestamp(x, fcy, align, human, cache_opts)
-		end
+			local width = text_width(human, sec_opts)
 
-		-- Elapsed time
-		if state.time_human then
-			draw_timeline_timestamp(bax + spacing, fcy, 4, state.time_human, time_opts)
-		end
-
-		-- End time
-		if state.destination_time_human then
-			draw_timeline_timestamp(bbx - spacing, fcy, 6, state.destination_time_human, time_opts)
+			if x < sec_min_x then x = sec_min_x elseif x + width > sec_max_x then x, align = sec_max_x, 6 end
+			draw_timeline_timestamp(x, fcy, align, human, sec_opts)
 		end
 	end
 
